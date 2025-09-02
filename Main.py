@@ -1,4 +1,3 @@
-import ursina.application
 from ursina import Ursina
 import Game
 
@@ -6,5 +5,4 @@ import Game
 
 app = Ursina()
 Game.init()
-
 app.run()
