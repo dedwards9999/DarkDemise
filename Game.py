@@ -1,4 +1,3 @@
-import camera
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 
@@ -67,7 +66,6 @@ def createRandomizedLevelList():
             basicEmptyLevelList[savedVerticalSpot][savedHorizontalSpot] = 0
             savedVerticalSpot+=1
             verticalBreakthroughs+=1
-    printTwoDimenisonalList(size, size, basicEmptyLevelList)
     return basicEmptyLevelList
 
 def printTwoDimenisonalList(xm, ym, list):
@@ -96,8 +94,11 @@ def createNewLevel():
 def init():
     createNewLevel()
     player = FirstPersonController()
+    player.position = (3, 0, 3)
     player.scale *= 0.25
     player.jump_height *= 0.5
     player.cursor.color = color.black
     player.cursor.scale *= 0.5
+
+    #figure out how to attach a fun sprite to the screen
 
