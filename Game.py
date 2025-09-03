@@ -1,3 +1,4 @@
+from PIL.ImageOps import scale
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 
@@ -25,12 +26,14 @@ def createRandomizedLevelList():
             basicEmptyLevelList[i][j] = 1
             if i == 0:
                 maxRightBreakthroughs+=1
+
     verticalBreakthroughs = 0
     horizontalBreakthroughs = 0
     savedHorizontalSpot = 2
     savedVerticalSpot = 2
     savedHorizontalLimit = 2
     savedVerticalLimit = 2
+
     while verticalBreakthroughs < maxDownwardBreakthroughs or horizontalBreakthroughs < maxRightBreakthroughs:
         if verticalBreakthroughs >= maxDownwardBreakthroughs:
             breakToTheRight = True
@@ -47,7 +50,7 @@ def createRandomizedLevelList():
                 if basicEmptyLevelList[savedVerticalSpot][i] == 1:
                     savedHorizontalLimit = i
                     break
-            savedVerticalSpot = savedVerticalLimit-random.randint(1,3)
+            savedVerticalSpot = savedVerticalLimit-random.randint(1,4)
             savedHorizontalSpot = savedHorizontalLimit
             basicEmptyLevelList[savedVerticalSpot][savedHorizontalSpot] = 0
             savedHorizontalSpot+=1
@@ -61,7 +64,7 @@ def createRandomizedLevelList():
                 if basicEmptyLevelList[i][savedHorizontalSpot] == 1:
                     savedVerticalLimit = i
                     break
-            savedHorizontalSpot = savedHorizontalLimit-random.randint(1,3)
+            savedHorizontalSpot = savedHorizontalLimit-random.randint(1,4)
             savedVerticalSpot = savedVerticalLimit
             basicEmptyLevelList[savedVerticalSpot][savedHorizontalSpot] = 0
             savedVerticalSpot+=1
@@ -80,10 +83,10 @@ def createLevel(levelList):
     for i in range(len(levelList)):
         for j in range(len(levelList[i])):
             if levelList[i][j] == 1:
-                Entity(model='cube', scale=Vec3(1, 1, 1), position=Vec3(i, 0, j), texture='brick', collider='box',
+                Entity(model='cube', scale=Vec3(1, 2, 1), position=Vec3(i, 0, j), texture='brick', collider='box',
                        color=color.red)
             elif levelList[i][j] == 2:
-                Entity(model='cube', scale=Vec3(1, 1, 1), position=Vec3(i, 0, j), texture='brick', collider='box', color=color.white)
+                Entity(model='cube', scale=Vec3(1, 2, 1), position=Vec3(i, 0, j), texture='brick', collider='box', color=color.white)
 
 def createNewLevel():
     scene.clear()
@@ -91,14 +94,29 @@ def createNewLevel():
     createLevel(levelList)
 
 
-def init():
-    createNewLevel()
+def createPlayer():
     player = FirstPersonController()
-    player.position = (3, 0, 3)
-    player.scale *= 0.25
+    player.position = (3, 2, 3)
+    player.scale *= 0.2
     player.jump_height *= 0.5
     player.cursor.color = color.black
     player.cursor.scale *= 0.5
+    player.collider='capsule'
 
-    #figure out how to attach a fun sprite to the screen
+    playergun = Sprite(model='quad',parent=camera.ui, texture='GunSprite.png', position=(0.25, -0.45), scale=(0.1, 0.1),)
+
+
+def init():
+    createNewLevel()
+    createPlayer()
+
+    """
+    Checklist:
+    transition between levels
+    create shooting mechanics
+    create gui
+    spawn baddies
+    spawn powerups
+    try making side rooms
+    """
 

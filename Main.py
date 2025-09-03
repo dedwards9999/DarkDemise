@@ -1,4 +1,4 @@
-from ursina import Ursina
+from ursina import Ursina, EditorCamera
 import Game
 
 #ursina.application.development_mode = False
