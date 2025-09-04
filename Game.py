@@ -1,6 +1,9 @@
-from PIL.ImageOps import scale
 from ursina import *
-from ursina.prefabs.first_person_controller import FirstPersonController
+
+global door
+global player
+global playerGun
+global reset
 
 def createRandomizedLevelList():
     size = 50
@@ -10,7 +13,7 @@ def createRandomizedLevelList():
             if i == 0 or j == 0 or i == size-1 or j == size-1:
                 basicEmptyLevelList[i][j] = 1
     basicEmptyLevelList[0][1] = 2
-    basicEmptyLevelList[size-1][size-2] = 2
+    basicEmptyLevelList[size-1][size-2] = 3
     # first run for the horizontals
     wallDividerHorizontal = random.randint(5,10)
     maxDownwardBreakthroughs = 0
@@ -50,7 +53,7 @@ def createRandomizedLevelList():
                 if basicEmptyLevelList[savedVerticalSpot][i] == 1:
                     savedHorizontalLimit = i
                     break
-            savedVerticalSpot = savedVerticalLimit-random.randint(1,4)
+            savedVerticalSpot = savedVerticalLimit-random.randint(1,3)
             savedHorizontalSpot = savedHorizontalLimit
             basicEmptyLevelList[savedVerticalSpot][savedHorizontalSpot] = 0
             savedHorizontalSpot+=1
@@ -64,18 +67,13 @@ def createRandomizedLevelList():
                 if basicEmptyLevelList[i][savedHorizontalSpot] == 1:
                     savedVerticalLimit = i
                     break
-            savedHorizontalSpot = savedHorizontalLimit-random.randint(1,4)
+            savedHorizontalSpot = savedHorizontalLimit-random.randint(1,3)
             savedVerticalSpot = savedVerticalLimit
             basicEmptyLevelList[savedVerticalSpot][savedHorizontalSpot] = 0
             savedVerticalSpot+=1
             verticalBreakthroughs+=1
     return basicEmptyLevelList
 
-def printTwoDimenisonalList(xm, ym, list):
-    for i in range(xm):
-        for j in range(ym):
-            print(list[i][j], end='')
-        print()
 
 def createLevel(levelList):
     Entity(model='cube', position=(len(levelList) // 2, -1, (len(levelList) // 2)),
@@ -86,7 +84,10 @@ def createLevel(levelList):
                 Entity(model='cube', scale=Vec3(1, 2, 1), position=Vec3(i, 0, j), texture='brick', collider='box',
                        color=color.red)
             elif levelList[i][j] == 2:
-                Entity(model='cube', scale=Vec3(1, 2, 1), position=Vec3(i, 0, j), texture='brick', collider='box', color=color.white)
+                Entity(model='cube', scale=Vec3(1, 2, 1), position=Vec3(i, 0, j), texture='brick', collider='box', color=color.dark_gray)
+            elif levelList[i][j] == 3:
+                global door
+                door = Entity(model='cube', scale=Vec3(1, 2, 1), position=Vec3(i, 0, j), texture='brick', collider='box', color=color.green)
 
 def createNewLevel():
     scene.clear()
@@ -95,28 +96,52 @@ def createNewLevel():
 
 
 def createPlayer():
-    player = FirstPersonController()
+    global player
+    player = Entity(model='cube',collider='box')
     player.position = (3, 2, 3)
     player.scale *= 0.2
-    player.jump_height *= 0.5
-    player.cursor.color = color.black
-    player.cursor.scale *= 0.5
-    player.collider='capsule'
-
-    playergun = Sprite(model='quad',parent=camera.ui, texture='GunSprite.png', position=(0.25, -0.45), scale=(0.1, 0.1),)
-
+    global playerGun
+    playerGun = Sprite(model='quad',parent=camera.ui, texture='GunSprite.png', position=(0.25, -0.45), scale=(0.1, 0.1),)
+    mouse.visible = False
+    Entity(model='circle',parent=camera.ui ,position=(0,0),scale=(0.015,0.015), color=color.black)
 
 def init():
     createNewLevel()
     createPlayer()
 
-    """
-    Checklist:
-    transition between levels
-    create shooting mechanics
-    create gui
-    spawn baddies
-    spawn powerups
-    try making side rooms
-    """
+def shootGun():
+
+
+
+def update():
+    global reset
+    global player
+    camera.position = (player.x,player.y,player.z)
+    mouse.position = (0,0)
+    sensitivity = 50
+    camera.rotation += (mouse.prev_y*-sensitivity, mouse.prev_x*sensitivity, 0)
+    camera.rotation_x = clamp(camera.rotation_x, -85, 85)
+    sideSpeed = 2
+    forwardSpeed = 4
+    move_dir = Vec3(0,0,0)
+    if len(move_dir) > 0:
+        move_dir = move_dir.normalized()
+    if held_keys['shift']:
+        forwardSpeed = 7
+    if held_keys['w']:
+        move_dir += camera.forward * forwardSpeed * time.dt
+    if held_keys['s']:
+        move_dir -= camera.forward * forwardSpeed * time.dt
+    if held_keys['a']:
+        move_dir -= camera.right * sideSpeed * time.dt
+    if held_keys['d']:
+        move_dir += camera.right * sideSpeed * time.dt
+    player.position += move_dir
+    if player.intersects(door):
+        init()
+    if player.intersects():
+        player.position -= move_dir * 1.001
+    player.y = 0.25
+    if mouse.left():
+        shootGun()
 
